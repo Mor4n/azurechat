@@ -1,26 +1,17 @@
 import { ChatAPIEntry } from "@/features/chat-page/chat-services/chat-api/chat-api";
 import { UserPrompt } from "@/features/chat-page/chat-services/models";
-import { NextResponse } from 'next/server'; // Asegúrate de importar NextResponse
 
 export async function POST(req: Request) {
   const formData = await req.formData();
-  const content = formData.get("content") as string; // Ajustar el cast
-  const multimodalImage = formData.get("image-base64") as string; // Ajustar el cast
+  const content = formData.get("content") as unknown as string;
+  const multimodalImage = formData.get("image-base64") as unknown as string;
 
   const userPrompt: UserPrompt = {
     ...JSON.parse(content),
     multimodalImage,
   };
 
-  const response = await ChatAPIEntry(userPrompt, req.signal);
-
-  // Verifica que la respuesta sea válida
-  if (response instanceof Response) {
-    return response;
-  } else {
-    // Manejar el caso en que no es una respuesta válida
-    return NextResponse.error(); // Devuelve un error si no es válido
-  }
+  return await ChatAPIEntry(userPrompt, req.signal);
 }
 
 

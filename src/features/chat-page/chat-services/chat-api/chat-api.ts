@@ -35,17 +35,7 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal)  => {
 
   const currentChatThread = currentChatThreadResponse.response;
 
-  // Paso 1: Consultar el servicio Custom QnA antes de enviar al modelo GPT
-  const customQnAResponse = await fetchCustomQnA(props.message);
-
-  if (customQnAResponse.confidence >= 70) {
-    // Si la confianza es suficiente, devolvemos la respuesta de Custom QnA sin pasar al modelo GPT
-    return new Response(customQnAResponse.answer, {
-      headers: {
-        "Content-Type": "text/event-stream",
-      },
-    });
-  }
+ 
 
   // Paso 2: Continuar con el flujo normal si la confianza es menor a 70
   const [user, history, docs, extension] = await Promise.all([
