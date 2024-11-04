@@ -22,12 +22,12 @@ param openAILocation string
 param openAISku string = 'S0'
 param openAIApiVersion string ='2024-08-01-preview'
 
-param chatGptDeploymentCapacity int = 30
+param chatGptDeploymentCapacity int = 5
 param chatGptDeploymentName string = 'gpt-4o'
 param chatGptModelName string = 'gpt-4o'
 param chatGptModelVersion string = '2024-05-13'
 param embeddingDeploymentName string = 'embedding'
-param embeddingDeploymentCapacity int = 120
+param embeddingDeploymentCapacity int = 5
 param embeddingModelName string = 'text-embedding-ada-002'
 
 // DALL-E v3 only supported in limited regions for now

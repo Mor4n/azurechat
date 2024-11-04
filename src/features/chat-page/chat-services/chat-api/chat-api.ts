@@ -1,6 +1,11 @@
 "use server";
 import "server-only";
 
+
+// Nueva función para consultar el servicio de Custom QnA en Azure Language Studio
+import { fetchCustomQnA } from "@/services/customQnA"; 
+
+
 import { getCurrentUser } from "@/features/auth-page/helpers";
 import { CHAT_DEFAULT_SYSTEM_PROMPT } from "@/features/theme/theme-config";
 import { ChatCompletionStreamingRunner } from "openai/resources/beta/chat/completions";
@@ -20,6 +25,7 @@ import { ChatApiMultimodal } from "./chat-api-multimodal";
 import { OpenAIStream } from "./open-ai-stream";
 type ChatTypes = "extensions" | "chat-with-file" | "multimodal";
 
+//Esta es la función que procesa un mensaje de usuario y devuelve una respuesta, adaptándose al tipo de entrada (texto, imagen, archivo) y contexto.
 export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
   const currentChatThreadResponse = await EnsureChatThreadOperation(props.id);
 
@@ -28,6 +34,23 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
   }
 
   const currentChatThread = currentChatThreadResponse.response;
+
+
+  // Paso 1: Consultar el servicio Custom QnA antes de enviar al modelo GPT
+  const customQnAResponse = await fetchCustomQnA(props.message);
+
+  if (customQnAResponse.confidence >= 70) {
+    // Si la confianza es suficiente, devolvemos la respuesta de Custom QnA sin pasar al modelo GPT
+    return OpenAIStream({
+      runner: null, // no usamos el modelo GPT
+      chatThread: currentChatThread,
+      customQnAResponse: customQnAResponse.answer, // pasamos la respuesta de Custom QnA
+    });
+  }
+
+  // Paso 2: Continuar con el flujo normal si la confianza es menor a 70
+
+
 
   // promise all to get user, history and docs
   const [user, history, docs, extension] = await Promise.all([
@@ -106,6 +129,13 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
     },
   });
 };
+
+
+
+
+
+
+
 
 const _getHistory = async (chatThread: ChatThreadModel) => {
   const historyResponse = await FindTopChatMessagesForCurrentUser(
