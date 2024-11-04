@@ -8,7 +8,7 @@ import {
 } from "../models";
 
 export const OpenAIStream = (props: {
-  runner: ChatCompletionStreamingRunner|null;
+  runner: ChatCompletionStreamingRunner;
   chatThread: ChatThreadModel;
   customQnAResponse?: string;
 }) => {
