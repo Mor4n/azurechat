@@ -1,10 +1,8 @@
 "use server";
 import "server-only";
 
-
 // Nueva función para consultar el servicio de Custom QnA en Azure Language Studio
-import { fetchCustomQnA } from "@/features/common/services/customqna"; 
-
+import { fetchCustomQnA } from "@/features/common/services/customqna";
 
 import { getCurrentUser } from "@/features/auth-page/helpers";
 import { CHAT_DEFAULT_SYSTEM_PROMPT } from "@/features/theme/theme-config";
@@ -25,8 +23,8 @@ import { ChatApiMultimodal } from "./chat-api-multimodal";
 import { OpenAIStream } from "./open-ai-stream";
 type ChatTypes = "extensions" | "chat-with-file" | "multimodal";
 
-//Esta es la función que procesa un mensaje de usuario y devuelve una respuesta, adaptándose al tipo de entrada (texto, imagen, archivo) y contexto.
-export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
+// Esta es la función que procesa un mensaje de usuario y devuelve una respuesta, adaptándose al tipo de entrada (texto, imagen, archivo) y contexto.
+export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal): Promise<Response> => {
   const currentChatThreadResponse = await EnsureChatThreadOperation(props.id);
 
   if (currentChatThreadResponse.status !== "OK") {
@@ -34,23 +32,6 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
   }
 
   const currentChatThread = currentChatThreadResponse.response;
-
-
-  // Paso 1: Consultar el servicio Custom QnA antes de enviar al modelo GPT
-  const customQnAResponse = await fetchCustomQnA(props.message);
-
-  if (customQnAResponse.confidence >= 70) {
-    // Si la confianza es suficiente, devolvemos la respuesta de Custom QnA sin pasar al modelo GPT
-    return OpenAIStream({
-      runner: null, // no usamos el modelo GPT
-      chatThread: currentChatThread,
-      customQnAResponse: customQnAResponse.answer, // pasamos la respuesta de Custom QnA
-    });
-  }
-
-  // Paso 2: Continuar con el flujo normal si la confianza es menor a 70
-
-
 
   // promise all to get user, history and docs
   const [user, history, docs, extension] = await Promise.all([
@@ -63,8 +44,7 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
       signal,
     }),
   ]);
-  // Starting values for system and user prompt
-  // Note that the system message will also get prepended with the extension execution steps. Please see ChatApiExtensions method.
+
   currentChatThread.personaMessage = `${CHAT_DEFAULT_SYSTEM_PROMPT} \n\n ${currentChatThread.personaMessage}`;
 
   let chatType: ChatTypes = "extensions";
@@ -86,8 +66,30 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
     multiModalImage: props.multimodalImage,
   });
 
-  let runner: ChatCompletionStreamingRunner;
+  // Primero, consulta el servicio de QnA
+  const qnaResponse = await fetchCustomQnA(props.message);
 
+  if (qnaResponse.confidence >= 70) {
+    // Si la confianza es suficiente, devolvemos la respuesta de Custom QnA sin pasar al modelo GPT
+    const readableStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(qnaResponse.answer);
+        controller.close();
+      }
+    });
+
+    return new Response(readableStream, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "Content-Type": "text/event-stream"
+      },
+    });
+  }
+
+  // Paso 2: Continuar con el flujo normal si la confianza es menor a 70
+
+  let runner: ChatCompletionStreamingRunner;
   switch (chatType) {
     case "chat-with-file":
       runner = await ChatApiRAG({
@@ -129,13 +131,6 @@ export const ChatAPIEntry = async (props: UserPrompt, signal: AbortSignal) => {
     },
   });
 };
-
-
-
-
-
-
-
 
 const _getHistory = async (chatThread: ChatThreadModel) => {
   const historyResponse = await FindTopChatMessagesForCurrentUser(
