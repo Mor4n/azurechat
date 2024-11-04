@@ -668,6 +668,14 @@
                     {
                       "name": "AZURE_STORAGE_ACCOUNT_KEY",
                       "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName={1})', variables('keyVaultName'), 'AZURE-STORAGE-ACCOUNT-KEY')]"
+                    },
+                    {
+                      "name": "AZURE_LANGUAGE_API_KEY",
+                      "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName={1})', variables('keyVaultName'), 'AZURE-LANGUAGE-API-KEY')]"
+                    },
+                    {
+                      "name": "AZURE-LANGUAGE-ENDPOINT-NAME",
+                      "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName={1})', variables('keyVaultName'), 'AZURE-LANGUAGE-ENDPOINT-NAME')]"
                     }
                   ]
                 }
@@ -684,6 +692,10 @@
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'AZURE-SEARCH-API-KEY')]",
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'AZURE-SPEECH-KEY')]",
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'AZURE-STORAGE-ACCOUNT-KEY')]",
+
+                "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'AZURE-LANGUAGE-KEY')]",
+                "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'AZURE-LANGUAGE-ENDPOINT-NAME')]",
+
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmos_name'))]",
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'NEXTAUTH-SECRET')]"

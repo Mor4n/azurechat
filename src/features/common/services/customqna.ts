@@ -1,10 +1,9 @@
-// services/customQnA.ts
 export const fetchCustomQnA = async (question: string) => {
-    const response = await fetch("TU_URL_DE_PREDICCIÓN_DE_CUSTOM_QNA", {
+    const response = await fetch(`https://${process.env.AZURE_LANGUAGE_ENDPOINT_NAME}.cognitiveservices.azure.com/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Ocp-Apim-Subscription-Key": process.env.CUSTOM_QNA_API_KEY,
+        "Ocp-Apim-Subscription-Key": process.env.AZURE_LANGUAGE_API_KEY,
       },
       body: JSON.stringify({ question }),
     });

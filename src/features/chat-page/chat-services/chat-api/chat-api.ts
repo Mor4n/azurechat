@@ -3,7 +3,7 @@ import "server-only";
 
 
 // Nueva función para consultar el servicio de Custom QnA en Azure Language Studio
-import { fetchCustomQnA } from "@/services/customQnA"; 
+import { fetchCustomQnA } from "@/features/common/services/customqna"; 
 
 
 import { getCurrentUser } from "@/features/auth-page/helpers";

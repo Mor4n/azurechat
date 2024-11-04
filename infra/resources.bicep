@@ -298,6 +298,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
       value: nextAuthHash
     }
   }
+  
 
   resource AZURE_COSMOSDB_KEY 'secrets' = {
     name: 'AZURE-COSMOSDB-KEY'
@@ -519,3 +520,4 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 }
 
 output url string = 'https://${webApp.properties.defaultHostName}'
+
