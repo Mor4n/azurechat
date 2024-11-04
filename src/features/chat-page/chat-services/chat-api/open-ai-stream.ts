@@ -10,11 +10,10 @@ import {
 export const OpenAIStream = (props: {
   runner: ChatCompletionStreamingRunner;
   chatThread: ChatThreadModel;
-  customQnAResponse?: string;
 }) => {
   const encoder = new TextEncoder();
 
-  const { runner, chatThread,customQnAResponse } = props;
+  const { runner, chatThread } = props;
 
   const readableStream = new ReadableStream({
     async start(controller) {
@@ -22,14 +21,6 @@ export const OpenAIStream = (props: {
         controller.enqueue(encoder.encode(`event: ${event} \n`));
         controller.enqueue(encoder.encode(`data: ${value} \n\n`));
       };
-
-       // Si customQnAResponse existe, enviamos esa respuesta
-       if (customQnAResponse) {
-        streamResponse("customQnA", JSON.stringify({ type: "customQnA", response: customQnAResponse }));
-        controller.close();
-        return;
-      }
-
 
       let lastMessage = "";
 
